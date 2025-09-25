@@ -7,22 +7,22 @@ import { defineChain, type Abi } from "viem";
 import CounterArtifact from "../artifacts/contracts/Counter.sol/Counter.json" assert { type: "json" };
 
 export const zksyncos = defineChain({
-  id: 8022833,
-  name: "zkSync OS Testnet Alpha",
+  id: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 270,
+  name: process.env.NETWORK_NAME || "ZKsyncOS",
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: {
-    default: { http: ["https://zksync-os-testnet-alpha.zksync.dev/"] },
-    public:  { http: ["https://zksync-os-testnet-alpha.zksync.dev/"] },
+    default: { http: [process.env.RPC_URL || ""] },
+    public:  { http: [process.env.RPC_URL || ""] },
   },
 });
 
 describe("Counter", async function () {
-  const { viem } = await network.connect("zksyncOS");
+  const { viem } = await network.connect(process.env.NETWORK_NAME || "ZKsyncOS");
 
   // clients bound to our explicit chain
   const publicClient = await viem.getPublicClient({ chain: zksyncos });
   const [wallet] = await viem.getWalletClients({ chain: zksyncos });
-  if (!wallet) throw new Error("No wallet client. Set TESTNET_PRIVATE_KEY for zksyncOS.");
+  if (!wallet) throw new Error("No wallet client. Set PRIVATE_KEY for zksyncOS.");
 
   const abi = CounterArtifact.abi as Abi;
   const bytecode = CounterArtifact.bytecode as `0x${string}`;

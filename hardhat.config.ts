@@ -26,12 +26,12 @@ const config: HardhatUserConfig = {
     requiredConfirmations: 1,
   },
   networks: {
-    zksyncOS: {
+    [process.env.NETWORK_NAME || "ZKsyncOS"]: {
       type: "http",
       chainType: "generic",
-      chainId: 8022833,
-      url: "https://zksync-os-testnet-alpha.zksync.dev",
-      accounts: [configVariable("TESTNET_PRIVATE_KEY")],
+      chainId: process.env.CHAIN_ID ? parseInt(process.env.CHAIN_ID) : 270,
+      url: process.env.RPC_URL || "",
+      accounts: [process.env.PRIVATE_KEY || ""],
     },
     hardhatMainnet: {
       type: "edr-simulated",
