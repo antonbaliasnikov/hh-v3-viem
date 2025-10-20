@@ -12,24 +12,30 @@ export const zksyncos = defineChain({
   nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
   rpcUrls: {
     default: { http: [process.env.RPC_URL || ""] },
-    public:  { http: [process.env.RPC_URL || ""] },
+    public: { http: [process.env.RPC_URL || ""] },
   },
 });
 
 describe("Counter", async function () {
-  const { viem } = await network.connect(process.env.NETWORK_NAME || "ZKsyncOS");
+  const { viem } = await network.connect(
+    process.env.NETWORK_NAME || "ZKsyncOS"
+  );
 
   // clients bound to our explicit chain
   const publicClient = await viem.getPublicClient({ chain: zksyncos });
   const [wallet] = await viem.getWalletClients({ chain: zksyncos });
-  if (!wallet) throw new Error("No wallet client. Set PRIVATE_KEY for zksyncOS.");
+  if (!wallet)
+    throw new Error("No wallet client. Set PRIVATE_KEY for zksyncOS.");
 
   const abi = CounterArtifact.abi as Abi;
   const bytecode = CounterArtifact.bytecode as `0x${string}`;
 
   it("Should emit the Increment event when calling the inc() function", async function () {
     const deployHash = await wallet.deployContract({ abi, bytecode, args: [] });
-    const deployRcpt = await publicClient.waitForTransactionReceipt({ hash: deployHash });
+    const deployRcpt = await publicClient.waitForTransactionReceipt({
+      hash: deployHash,
+      pollingInterval: 500,
+    });
     const counterAddr = deployRcpt.contractAddress!;
     const fromBlock = deployRcpt.blockNumber!;
 
@@ -40,7 +46,10 @@ describe("Counter", async function () {
       functionName: "inc",
       args: [],
     });
-    await publicClient.waitForTransactionReceipt({ hash: txHash });
+    await publicClient.waitForTransactionReceipt({
+      hash: txHash,
+      pollingInterval: 500,
+    });
 
     const events = await publicClient.getContractEvents({
       address: counterAddr,
@@ -55,7 +64,10 @@ describe("Counter", async function () {
 
   it("The sum of the Increment events should match the current value", async function () {
     const deployHash = await wallet.deployContract({ abi, bytecode, args: [] });
-    const deployRcpt = await publicClient.waitForTransactionReceipt({ hash: deployHash });
+    const deployRcpt = await publicClient.waitForTransactionReceipt({
+      hash: deployHash,
+      pollingInterval: 100,
+    });
     const counterAddr = deployRcpt.contractAddress!;
     const fromBlock = deployRcpt.blockNumber!;
 
@@ -66,7 +78,10 @@ describe("Counter", async function () {
         functionName: "incBy",
         args: [i],
       });
-      await publicClient.waitForTransactionReceipt({ hash: h });
+      await publicClient.waitForTransactionReceipt({
+        hash: h,
+        pollingInterval: 100,
+      });
     }
 
     const events = await publicClient.getContractEvents({
